@@ -16,3 +16,8 @@ El sistema permite identificar el método de compresión usado, ya sea RLE o LZ7
   - Operación XOR con una clave de un byte 
 - Desencriptación y descompresión inversa.
 ---
+
+## Enlace al repositorio viejo
+
+Enlace al repositorio donde consta del informe fue entregado dentro de los limites: 
+https://github.com/luisdaniel-gonzalez/desafio1-info2-copiavieja
