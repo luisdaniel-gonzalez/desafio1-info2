@@ -24,5 +24,5 @@ https://github.com/luisdaniel-gonzalez/desafio1-info2-copiavieja
 
 ## Integrantes equipo:
 
-Luis Daniel González Correa
-Jean Paul Agudelo Gutierrez 
+- Luis Daniel González Correa
+- Jean Paul Agudelo Gutierrez 

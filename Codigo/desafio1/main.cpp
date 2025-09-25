@@ -22,20 +22,18 @@ void aplicarRotacion(unsigned char* buffer, int size, int n) {
 
 int descomprimirRLE(unsigned char* entrada, int sizeEntrada, unsigned char* salida, int maxSize) {
     int pos = 0;
+    for (int i = 0; i + 1 < sizeEntrada; i += 2) {
+        unsigned char val = entrada[i];
+        int rep = entrada[i + 1];
 
-    for (int i = 0; i + 1 < sizeEntrada; i += 2) { // asegurar que exista un par
-        int rep = (int)entrada[i];
-        unsigned char val = entrada[i + 1];
+        if (pos + rep > maxSize) rep = maxSize - pos;
 
-        if (rep <= 0) continue; // si la cantidad es 0, saltar
-
-        for (int j = 0; j < rep && pos < maxSize; j++) {
+        for (int j = 0; j < rep; j++)
             salida[pos++] = val;
-        }
     }
-
     return pos;
 }
+
 
 
 int descomprimirLZ78(unsigned char* buffer, int sizeBuffer, unsigned char* salida) {
@@ -124,7 +122,7 @@ int main() {
         ruta = "debug/datasetDesarrollo/Encriptado3.txt";
         clave = 0x40;
         rutaPista = "debug/datasetDesarrollo/pista3.txt";
-        esRLE = true;
+        esRLE = false;
         break;
     case 4:
         ruta = "debug/datasetDesarrollo/Encriptado4.txt";
