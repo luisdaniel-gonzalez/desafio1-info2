@@ -63,6 +63,21 @@ int contarTamano(const char* nombreArchivo) {
     return contador;
 }
 
+bool contienePista(unsigned char* texto, int sizeTexto,
+                   unsigned char* pista, int sizePista) {
+
+    for (int i = 0; i <= sizeTexto - sizePista; i++) {
+        int j = 0;
+        while (j < sizePista and texto[i + j] == pista[j]) {
+            j++;
+        }
+        if (j == sizePista) {
+
+            return true; // pista igual
+        }
+    }
+    return false;
+}
 
 int main() {
 
@@ -80,7 +95,6 @@ int main() {
     if (!archivo) {
         cout << "Error abriendo Encriptado3.txt" << endl;
         delete[] buffer;
-
         return 1;
     }
 
@@ -95,16 +109,21 @@ int main() {
     aplicarXOR(buffer, size, clave);      // primero XOR
     aplicarRotacion(buffer, size, 8 - n); // luego rotacion inversa
 
-    cout << "Primeros 50 caracteres despues de desencriptar:" << endl;
-    for (int i = 0; i < 50 && i < size; i++) {
-        cout << buffer[i];
+    unsigned char* salida = new unsigned char[size * 10];
+
+    int sizeSalida = descomprimirRLE(buffer, size, salida);
+
+    cout << "Primeros 200 caracteres despues de descomprimir:" << endl;
+
+    for (int i = 0; i < 200 && i < sizeSalida; i++) {
+        cout << salida[i];
     }
     cout << endl;
 
     delete[] buffer;
+    delete[] salida;
 
     return 0;
-
 }
 
 /*int prueba() {
