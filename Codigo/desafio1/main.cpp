@@ -31,8 +31,42 @@ void aplicarRotacion(unsigned char* buffer, int size, int n) // Aplica rotación
     }
 }
 
+void descomprimirRLE()
+{
+    cout << "En proceso en bloc de nota" << endl;
+}
+
 int main()
 {
     cout << "Desafio 1 - Informatica 2. Descomprimo y desencripto." << endl;
+    cout << "Prueba de XOR y rotacion" << endl;
+
+    unsigned char mensaje[5] = { 'A', 'B', 'C', 'D', 'E' };
+    int size = 5;
+
+    cout << "Original: ";
+    for (int i = 0; i < size; i++) {
+        cout << mensaje[i] << " ";
+    }
+    cout << endl;
+
+    aplicarXOR(mensaje, size, 5);
+    aplicarRotacion(mensaje, size, 3);
+
+    cout << "Encriptado: ";
+    for (int i = 0; i < size; i++) {
+        cout << (int)mensaje[i] << " ";
+    } cout << endl;
+
+    aplicarRotacion(mensaje, size, 5);
+    aplicarXOR(mensaje, size, 5);
+
+    cout << "Desencriptado: ";
+    for (int i = 0; i < size; i++) {
+        cout << mensaje[i] << " ";
+    }
+    cout << endl;
+
+
     return 0;
 }
