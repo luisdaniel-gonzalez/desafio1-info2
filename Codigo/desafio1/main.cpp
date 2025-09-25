@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 
 using namespace std;
 
@@ -31,15 +32,82 @@ void aplicarRotacion(unsigned char* buffer, int size, int n) // Aplica rotación
     }
 }
 
-void descomprimirRLE()
-{
-    cout << "En proceso en bloc de nota" << endl;
+int descomprimirRLE(unsigned char* entrada, int sizeEntrada, unsigned char* salida) {
+    int posicion = 0;
+    for (int i = 0; i < sizeEntrada; i += 2) {
+        unsigned char repeticiones = entrada[i];
+        unsigned char valor = entrada[i + 1];
+        for (int j = 0; j < repeticiones; j++) {
+            salida[posicion] = valor;
+            posicion++;
+        }
+    }
+
+    return posicion;
 }
 
-int main()
-{
-    cout << "Desafio 1 - Informatica 2. Descomprimo y desencripto." << endl;
-    cout << "Prueba de XOR y rotacion" << endl;
+int contarTamano(const char* nombreArchivo) {
+    ifstream archivo(nombreArchivo, ios::binary);
+    if (!archivo) {
+        cout << "Error abriendo archivo: " << nombreArchivo << endl;
+        return -1;
+    }
+
+    int contador = 0;
+    char c;
+    while (archivo.get(c)) {
+        contador++;
+    }
+
+    archivo.close();
+    return contador;
+}
+
+
+int main() {
+
+    // Lectura de archivos enseñada en nuestro laboratorio
+
+    const char* ruta = "debug/datasetDesarrollo/Encriptado3.txt";
+    int size = contarTamano(ruta);
+    if (size <= 0) {
+        return 1;
+    }
+
+    unsigned char* buffer = new unsigned char[size];
+
+    ifstream archivo(ruta, ios::binary);
+    if (!archivo) {
+        cout << "Error abriendo Encriptado3.txt" << endl;
+        delete[] buffer;
+
+        return 1;
+    }
+
+    archivo.read((char*)buffer, size);
+    archivo.close();
+
+    cout << "Archivo Encriptado3.txt cargado, Tamano: " << size << " bytes" << endl;
+
+    unsigned char clave = 0x40;  // Clave de README del profe
+    int n = 3;                   // rotacion de 3 bits
+
+    aplicarXOR(buffer, size, clave);      // primero XOR
+    aplicarRotacion(buffer, size, 8 - n); // luego rotacion inversa
+
+    cout << "Primeros 50 caracteres despues de desencriptar:" << endl;
+    for (int i = 0; i < 50 && i < size; i++) {
+        cout << buffer[i];
+    }
+    cout << endl;
+
+    delete[] buffer;
+
+    return 0;
+
+}
+
+/*int prueba() {
 
     unsigned char mensaje[5] = { 'A', 'B', 'C', 'D', 'E' };
     int size = 5;
@@ -58,7 +126,7 @@ int main()
         cout << (int)mensaje[i] << " ";
     } cout << endl;
 
-    aplicarRotacion(mensaje, size, 5);
+    aplicarRotacion(mensaje, size, 5); // Rotar a la izquierda 3 veces, es lo mismo que rotar a la derecha 5, reutilizo la funcion
     aplicarXOR(mensaje, size, 5);
 
     cout << "Desencriptado: ";
@@ -69,4 +137,5 @@ int main()
 
 
     return 0;
-}
+
+} */
