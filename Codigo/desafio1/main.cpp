@@ -22,15 +22,21 @@ void aplicarRotacion(unsigned char* buffer, int size, int n) {
 
 int descomprimirRLE(unsigned char* entrada, int sizeEntrada, unsigned char* salida, int maxSize) {
     int pos = 0;
-    for (int i = 0; i < sizeEntrada; i += 2) {
-        if (i + 1 >= sizeEntrada) break;
-        int rep = entrada[i];           // convertir a int
+
+    for (int i = 0; i + 1 < sizeEntrada; i += 2) { // asegurar que exista un par
+        int rep = (int)entrada[i];
         unsigned char val = entrada[i + 1];
-        for (int j = 0; j < rep && pos < maxSize; j++)
+
+        if (rep <= 0) continue; // si la cantidad es 0, saltar
+
+        for (int j = 0; j < rep && pos < maxSize; j++) {
             salida[pos++] = val;
+        }
     }
+
     return pos;
 }
+
 
 int descomprimirLZ78(unsigned char* buffer, int sizeBuffer, unsigned char* salida) {
 
@@ -85,8 +91,51 @@ bool contienePista(unsigned char* texto, int sizeTexto,
 }
 
 int main() {
-    const char* ruta = "debug/datasetDesarrollo/Encriptado2.txt";
-    const char* rutaPista = "debug/datasetDesarrollo/pista2.txt";
+
+    int opcion;
+
+    const char* ruta;
+    unsigned char clave;
+    const char* rutaPista;
+    bool esRLE;
+
+    cout << "Selecciona el encriptado que quieres ver:\n";
+    cout << "1. Encriptado1.txt (RLE, Key=0x5A)\n";
+    cout << "2. Encriptado2.txt (LZ78, Key=0x5A)\n";
+    cout << "3. Encriptado3.txt (RLE, Key=0x40)\n";
+    cout << "4. Encriptado4.txt (LZ78, Key=0x5A)\n";
+    cout << "Opcion: ";
+    cin >> opcion;
+
+    switch(opcion) {
+    case 1:
+        ruta = "debug/datasetDesarrollo/Encriptado1.txt";
+        clave = 0x5A;
+        rutaPista = "debug/datasetDesarrollo/pista1.txt";
+        esRLE = true;
+        break;
+    case 2:
+        ruta = "debug/datasetDesarrollo/Encriptado2.txt";
+        clave = 0x5A;
+        rutaPista = "debug/datasetDesarrollo/pista2.txt";
+        esRLE = false;
+        break;
+    case 3:
+        ruta = "debug/datasetDesarrollo/Encriptado3.txt";
+        clave = 0x40;
+        rutaPista = "debug/datasetDesarrollo/pista3.txt";
+        esRLE = true;
+        break;
+    case 4:
+        ruta = "debug/datasetDesarrollo/Encriptado4.txt";
+        clave = 0X5a;
+        rutaPista = "debug/datasetDesarrollo/pista4.txt";
+        esRLE = false;
+        break;
+    default:
+        cout << "Opcion invalida" << endl;
+        return 1;
+    }
 
     ifstream archivo(ruta, ios::binary);
     if (!archivo) { cout << "No se pudo abrir el archivo"; return 1; }
@@ -106,8 +155,6 @@ int main() {
     archPista.read((char*)bufferPista, sizePista);
     archPista.close();
 
-    //unsigned char clave = 0x5A; // Para 1 y 2
-    unsigned char clave = 0x40; // Para 3 y 4
     int n = 3;  // rotación inversa de 3
 
     aplicarXOR(buffer, size, clave);      // aplicar XOR
@@ -123,24 +170,35 @@ int main() {
     memcpy(bufferLZ78, buffer, size);
 
     int sizeSalida = 0;
+    bool bandera = false; // false es RLE, true es LZ78
 
-    cout << "Descomprimiendo RLE..." << endl;
-
-    int sizeSalidaRLE = descomprimirRLE(bufferRLE, size, salida, size * 50);
-    if (contienePista(salida, sizeSalidaRLE, bufferPista, sizePista)) {
-        cout << "Metodo correcto: RLE" << endl;
+    if (esRLE) {
+        int sizeSalidaRLE = descomprimirRLE(bufferRLE, size, salida, size * 50);
+        if (contienePista(salida, sizeSalidaRLE, bufferPista, sizePista)) {
+        bandera = false;
         sizeSalida = sizeSalidaRLE;
+        } else {
+            cout << "No se encontro la pista con RLE." << endl;
+        }
     } else {
-        cout << "Descomprimiendo LZ78..." << endl;
         int sizeSalidaLZ = descomprimirLZ78(bufferLZ78, size, salida);
         if (contienePista(salida, sizeSalidaLZ, bufferPista, sizePista)) {
-            cout << "Metodo correcto: LZ78" << endl;
             sizeSalida = sizeSalidaLZ;
+            bandera = true;
         } else {
-            cout << "No se encontro la pista en ninguno de los metodos." << endl;
+            cout << "No se encontro la pista con LZ78." << endl;
         }
     }
 
+    cout << endl;
+    if (bandera) {
+        cout << "El metodo usado fue LZ78" << endl;
+    } else {
+        cout << "El metodo usado fue RLE" << endl;
+    }
+
+    cout << "La clave usada fue: 0x" << hex << (int)clave << endl;
+    cout << "Rotacion aplicada: 3 a la derecha" << endl;
     // Guardar resultado (enseñado en laboratorio)
 
     ofstream resultado("resultado.txt", ios::binary);
