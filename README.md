@@ -21,3 +21,8 @@ El sistema permite identificar el método de compresión usado, ya sea RLE o LZ7
 
 Enlace al repositorio donde consta del informe fue entregado dentro de los limites: 
 https://github.com/luisdaniel-gonzalez/desafio1-info2-copiavieja
+
+## Integrantes equipo:
+
+Luis Daniel González Correa
+Jean Paul Agudelo Gutierrez 
