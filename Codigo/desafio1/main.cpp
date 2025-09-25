@@ -11,7 +11,6 @@ void aplicarXOR(unsigned char* buffer, int size, unsigned char K) // XOR
     }
 }
 
-
 unsigned char rotarDerecha(unsigned char byte, int n) // Rotacion derecha byte
 {
 
@@ -32,11 +31,11 @@ void aplicarRotacion(unsigned char* buffer, int size, int n) // Aplica rotación
     }
 }
 
-int descomprimirRLE(unsigned char* entrada, int sizeEntrada, unsigned char* salida) {
+int descomprimirRLE(unsigned char* entrada, int sizeEntrada, unsigned char* salida, int maxSalida) {
 
     int posicion = 0;
     for (int i = 0; i < sizeEntrada; i += 2) {
-        if (i + 1 >= sizeEntrada) break; // <-- evita crash si tamaño impar
+        if (i + 1 >= sizeEntrada) break; // evita crash si tamaño impar
         unsigned char repeticiones = entrada[i];
         unsigned char valor = entrada[i + 1];
         for (int j = 0; j < repeticiones; j++) {
@@ -47,46 +46,60 @@ int descomprimirRLE(unsigned char* entrada, int sizeEntrada, unsigned char* sali
     return posicion;
 }
 
-int descomprimirLZ78(unsigned char* buffer, int tamanoBuffer, unsigned char* salida) {
+int descomprimirLZ78(unsigned char* buffer, int tamanoBuffer, unsigned char* salida, int maxSalida) {
 
-    const int MAX = 1000;
+    const unsigned int MAX = 5000;
     unsigned char* dic[MAX];
     int largo[MAX];
-    int total = 0;
+    unsigned int total = 0;
 
     int posSalida = 0;
 
-    for (int i = 0; i < tamanoBuffer; i += 3) {
-        if (i + 2 >= tamanoBuffer) break;
+    for (int i = 0; i + 2 < tamanoBuffer; i += 3) {
 
         unsigned short indice = (buffer[i] << 8) | buffer[i + 1];
         unsigned char letra = buffer[i + 2];
 
         if (indice == 0) {
+            if (posSalida >= maxSalida) break;
             salida[posSalida++] = letra;
 
             dic[total] = new unsigned char[1];
             dic[total][0] = letra;
             largo[total] = 1;
             total++;
-        } else {
+        } else if (indice - 1 < total) {
             int pos = indice - 1;
 
             for (int j = 0; j < largo[pos]; j++) {
+                if (posSalida >= maxSalida) break;
                 salida[posSalida++] = dic[pos][j];
             }
 
-            salida[posSalida++] = letra;
+            if (posSalida < maxSalida)
+                salida[posSalida++] = letra;
 
             int nuevoLargo = largo[pos] + 1;
             dic[total] = new unsigned char[nuevoLargo];
-            for (int j = 0; j < largo[pos]; j++) {
+            for (int j = 0; j < largo[pos]; j++)
                 dic[total][j] = dic[pos][j];
-            }
             dic[total][nuevoLargo - 1] = letra;
             largo[total] = nuevoLargo;
             total++;
+        } else {
+            cout << "Indice fuera de rango: " << indice << endl;
         }
+
+        if (total >= MAX) {
+            cout << "Diccionario LZ78 lleno, deteniendo descompresion" << endl;
+            break;
+        }
+    }
+
+    // Liberar memoria del diccionario
+
+    for (unsigned int i = 0; i < total; i++) {
+        delete[] dic[i];
     }
 
     return posSalida;
@@ -128,7 +141,7 @@ bool contienePista(unsigned char* texto, int sizeTexto,
 
 int main() {
 
-    const char* ruta = "debug/datasetDesarrollo/Encriptado3.txt";
+    const char* ruta = "debug/datasetDesarrollo/Encriptado4.txt";
     int size = contarTamano(ruta);
 
     if (size <= 0) return 1;
@@ -154,33 +167,37 @@ int main() {
 
     // Leer pista
 
-    const char* rutaPista = "debug/datasetDesarrollo/pista3.txt";
+    const char* rutaPista = "debug/datasetDesarrollo/pista4.txt";
 
     int sizePista = contarTamano(rutaPista);
     unsigned char* bufferPista = new unsigned char[sizePista];
+
     ifstream archPista(rutaPista, ios::binary);
+
     archPista.read((char*)bufferPista, sizePista);
     archPista.close();
 
-    unsigned char* salida = new unsigned char[size * 50];
+    int maxSalida = size * 50;
+    unsigned char* salida = new unsigned char[maxSalida];
 
 
     // Intentar RLE
 
-    int sizeSalida = descomprimirRLE(buffer, size, salida);
+    int sizeSalida = descomprimirRLE(buffer, size, salida, maxSalida);
+
     if (contienePista(salida, sizeSalida, bufferPista, sizePista)) {
         cout << "Metodo correcto: RLE" << endl;
-        for (int i = 0; i < 200 && i < sizeSalida; i++) cout << salida[i];
+        for (int i = 0; i < 200 and i < sizeSalida; i++) cout << salida[i];
         cout << endl;
     } else {
 
         // Intentar LZ78
 
-        int sizeSalida2 = descomprimirLZ78(buffer, size, salida);
+        int sizeSalida2 = descomprimirLZ78(buffer, size, salida, maxSalida);
 
         if (contienePista(salida, sizeSalida2, bufferPista, sizePista)) {
             cout << "Metodo correcto: LZ78" << endl;
-            for (int i = 0; i < 200 && i < sizeSalida2; i++) cout << salida[i];
+            for (int i = 0; i < 200 and i < sizeSalida2; i++) cout << salida[i];
             cout << endl;
         } else {
             cout << "No se encontro la pista en ninguno de los dos metodos." << endl;
