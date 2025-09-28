@@ -57,7 +57,6 @@ int descomprimirLZ78(unsigned char* buffer, int sizeBuffer, unsigned char* salid
         } else {
             int pos = indice - 1;
 
-            // <<< Aquí se pone la verificación
             if (pos < 0 || pos >= total) {
                 cout << "Error: indice fuera de rango LZ78 en i=" << i << endl;
                 break;
@@ -98,16 +97,16 @@ int main() {
     bool esRLE;
 
     cout << "Selecciona el encriptado que quieres ver:\n";
-    cout << "1. Encriptado1.txt (RLE, Key=0x5A)\n";
-    cout << "2. Encriptado2.txt (LZ78, Key=0x5A)\n";
-    cout << "3. Encriptado3.txt (RLE, Key=0x40)\n";
-    cout << "4. Encriptado4.txt (LZ78, Key=0x5A)\n";
+    cout << "1. Encriptado1.txt\n";
+    cout << "2. Encriptado2.txt\n";
+    cout << "3. Encriptado3.txt\n";
+    cout << "4. Encriptado4.txt\n";
     cout << "Opcion: ";
     cin >> opcion;
 
     switch(opcion) {
     case 1:
-        ruta = "debug/datasetDesarrollo/Encriptado1.txt";
+        ruta = "debug/datasetDesarrollo/encriptado.txt";
         clave = 0x5A;
         rutaPista = "debug/datasetDesarrollo/pista1.txt";
         esRLE = true;
@@ -122,7 +121,7 @@ int main() {
         ruta = "debug/datasetDesarrollo/Encriptado3.txt";
         clave = 0x40;
         rutaPista = "debug/datasetDesarrollo/pista3.txt";
-        esRLE = false;
+        esRLE = true;
         break;
     case 4:
         ruta = "debug/datasetDesarrollo/Encriptado4.txt";
@@ -153,12 +152,20 @@ int main() {
     archPista.read((char*)bufferPista, sizePista);
     archPista.close();
 
-    int n = 3;  // rotación inversa de 3
+    unsigned char* salida = new unsigned char[size * 50];
+    int prueba = descomprimirRLE(buffer, size, salida, size * 50);
+
+    for (int i = 0; i < prueba; i++) {
+        cout << salida[i];
+    }
+}
+
+    /*int n = 3;  // rotación inversa de 3
 
     aplicarXOR(buffer, size, clave);      // aplicar XOR
     aplicarRotacion(buffer, size, n); // invertir rotación
 
-    unsigned char* salida = new unsigned char[size * 50];
+    //unsigned char* salida = new unsigned char[size * 50];
 
     // Hago copias para que LZ no mueva lo que haga RLE
 
@@ -199,6 +206,13 @@ int main() {
     cout << "Rotacion aplicada: 3 a la derecha" << endl;
     // Guardar resultado (enseñado en laboratorio)
 
+    cout << "\n=== DESENCRIPTADO ===" << endl;
+    for (int i = 0; i < sizeSalida; i++) {
+        cout << salida[i];
+    }
+    cout << "\n===============================\n" << endl;
+
+
     ofstream resultado("resultado.txt", ios::binary);
     resultado.write((char*)salida, sizeSalida);
     resultado.close();
@@ -210,48 +224,5 @@ int main() {
 
     return 0;
 }
-
-/*
-int main () {
-
-    unsigned char texto[] = "abcdefrrenosdesxyz";
-    unsigned char pista[] = "rrenosdes";
-
-    if (contienePista(texto, sizeof(texto)-1, pista, sizeof(pista)-1))
-        cout << "Pista encontrada" << endl;
-    else
-        cout << "Pista NO encontrada" << endl;
 }
-
-int prueba() {
-
-    unsigned char mensaje[5] = { 'A', 'B', 'C', 'D', 'E' };
-    int size = 5;
-
-    cout << "Original: ";
-    for (int i = 0; i < size; i++) {
-        cout << mensaje[i] << " ";
-    }
-    cout << endl;
-
-    aplicarXOR(mensaje, size, 5);
-    aplicarRotacion(mensaje, size, 3);
-
-    cout << "Encriptado: ";
-    for (int i = 0; i < size; i++) {
-        cout << (int)mensaje[i] << " ";
-    } cout << endl;
-
-    aplicarRotacion(mensaje, size, 5); // Rotar a la izquierda 3 veces, es lo mismo que rotar a la derecha 5, reutilizo la funcion
-    aplicarXOR(mensaje, size, 5);
-
-    cout << "Desencriptado: ";
-    for (int i = 0; i < size; i++) {
-        cout << mensaje[i] << " ";
-    }
-    cout << endl;
-
-
-    return 0;
-
-} */
+*/
