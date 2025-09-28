@@ -26,3 +26,7 @@ https://github.com/luisdaniel-gonzalez/desafio1-info2-copiavieja
 
 - Luis Daniel González Correa
 - Jean Paul Agudelo Gutierrez 
+
+## Link del video:
+
+https://youtu.be/tt_CDUYrUS0
