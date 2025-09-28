@@ -93,7 +93,6 @@ int main() {
     int opcion;
 
     const char* ruta;
-    unsigned char clave;
     const char* rutaPista;
     bool esRLE;
 
@@ -125,11 +124,6 @@ int main() {
         ruta = "debug/datasetDesarrollo/Encriptado4.txt";
         rutaPista = "debug/datasetDesarrollo/pista4.txt";
         esRLE = false;
-        break;
-    case 5:
-        ruta = "debug/datasetDesarrollo/prueba.txt";
-        rutaPista = "debug/datasetDesarrollo/pista1.txt";
-        esRLE = true;
         break;
     default:
         cout << "Opcion invalida" << endl;
