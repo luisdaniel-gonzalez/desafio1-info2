@@ -11,7 +11,9 @@ unsigned char rotarDerecha(unsigned char byte, int n) {
     for (int i = 0; i < n; i++) {
         unsigned char ultimo = byte % 2;
         byte /= 2;
-        if (ultimo) byte += 128;
+        if (ultimo) {
+            byte += 128;
+        }
     }
     return byte;
 }
@@ -33,6 +35,7 @@ int descomprimirRLE(unsigned char* entrada, int sizeEntrada, unsigned char* sali
     }
     return pos;
 }
+
 int descomprimirLZ78(unsigned char* buffer, int sizeBuffer, unsigned char* salida) {
 
     const int MAX = 50000;
@@ -55,7 +58,6 @@ int descomprimirLZ78(unsigned char* buffer, int sizeBuffer, unsigned char* salid
             int pos = indice - 1;
 
             if (pos < 0 || pos >= total) {
-                cout << "Error: indice fuera de rango LZ78 en i=" << i << endl;
                 break;
             }
 
@@ -74,12 +76,14 @@ int descomprimirLZ78(unsigned char* buffer, int sizeBuffer, unsigned char* salid
 }
 
 
-bool contienePista(unsigned char* texto, int sizeTexto,
-                   unsigned char* pista, int sizePista) {
+bool contienePista(unsigned char* texto, int sizeTexto, unsigned char* pista, int sizePista) {
+
     for (int i = 0; i <= sizeTexto - sizePista; i++) {
         int j = 0;
         while (j < sizePista && texto[i + j] == pista[j]) j++;
-        if (j == sizePista) return true;
+        if (j == sizePista) {
+            return true;
+        }
     }
     return false;
 }
@@ -103,28 +107,29 @@ int main() {
 
     switch(opcion) {
     case 1:
-        ruta = "debug/datasetDesarrollo/encriptado.txt";
-        clave = 0x5A;
+        ruta = "debug/datasetDesarrollo/Encriptado1.txt";
         rutaPista = "debug/datasetDesarrollo/pista1.txt";
         esRLE = true;
         break;
     case 2:
         ruta = "debug/datasetDesarrollo/Encriptado2.txt";
-        clave = 0x5A;
         rutaPista = "debug/datasetDesarrollo/pista2.txt";
         esRLE = false;
         break;
     case 3:
         ruta = "debug/datasetDesarrollo/Encriptado3.txt";
-        clave = 0x40;
         rutaPista = "debug/datasetDesarrollo/pista3.txt";
         esRLE = true;
         break;
     case 4:
         ruta = "debug/datasetDesarrollo/Encriptado4.txt";
-        clave = 0X5a;
         rutaPista = "debug/datasetDesarrollo/pista4.txt";
         esRLE = false;
+        break;
+    case 5:
+        ruta = "debug/datasetDesarrollo/prueba.txt";
+        rutaPista = "debug/datasetDesarrollo/pista1.txt";
+        esRLE = true;
         break;
     default:
         cout << "Opcion invalida" << endl;
@@ -150,76 +155,103 @@ int main() {
     archPista.close();
 
     unsigned char* salida = new unsigned char[size * 50];
-    int prueba = descomprimirRLE(buffer, size, salida, size * 50);
+    unsigned char* actual = new unsigned char[size];
 
-    for (int i = 0; i < prueba; i++) {
-        cout << salida[i];
-    }
-}
-
-    /*int n = 3;  // rotación inversa de 3
-
-    aplicarXOR(buffer, size, clave);      // aplicar XOR
-    aplicarRotacion(buffer, size, n); // invertir rotación
-
-    //unsigned char* salida = new unsigned char[size * 50];
-
-    // Hago copias para que LZ no mueva lo que haga RLE
-
-    unsigned char* bufferRLE = new unsigned char[size];
-    unsigned char* bufferLZ78 = new unsigned char[size];
-    memcpy(bufferRLE, buffer, size);
-    memcpy(bufferLZ78, buffer, size);
-
+    bool encontrado = false;
     int sizeSalida = 0;
     bool bandera = false; // false es RLE, true es LZ78
+    int nEncontrada = 0;
+    int claveEncontrada = 0;
 
-    if (esRLE) {
-        int sizeSalidaRLE = descomprimirRLE(bufferRLE, size, salida, size * 50);
-        if (contienePista(salida, sizeSalidaRLE, bufferPista, sizePista)) {
-        bandera = false;
-        sizeSalida = sizeSalidaRLE;
-        } else {
-            cout << "No se encontro la pista con RLE." << endl;
-        }
-    } else {
-        int sizeSalidaLZ = descomprimirLZ78(bufferLZ78, size, salida);
-        if (contienePista(salida, sizeSalidaLZ, bufferPista, sizePista)) {
-            sizeSalida = sizeSalidaLZ;
-            bandera = true;
-        } else {
-            cout << "No se encontro la pista con LZ78." << endl;
+
+    for (int n = 1; n < 8 && !encontrado; ++n) {
+        for (int k = 0; k < 256 && !encontrado; ++k) {
+
+            memcpy(actual, buffer, size);
+
+            aplicarXOR(actual, size, (unsigned char)k);
+            aplicarRotacion(actual, size, n);
+
+
+            if (esRLE) {
+                // intentar RLE primero, segun lo dado por el profe
+                int sRLE = descomprimirRLE(actual, size, salida, size * 50);
+                if (sRLE > 0 && contienePista(salida, sRLE, bufferPista, sizePista)) {
+                    encontrado = true;
+                    sizeSalida = sRLE;
+                    bandera = false;
+                    nEncontrada = n;
+                    claveEncontrada = k;
+                    break;
+                }
+
+                // si falla, intentar LZ78
+                int sLZ = descomprimirLZ78(actual, size, salida);
+                if (sLZ > 0 && contienePista(salida, sLZ, bufferPista, sizePista)) {
+                    encontrado = true;
+                    sizeSalida = sLZ;
+                    bandera = true;
+                    nEncontrada = n;
+                    claveEncontrada = k;
+                    break;
+                }
+            } else { // si se espera LZ78, probar LZ78 primero segun lo dado por el profe
+                int sLZ = descomprimirLZ78(actual, size, salida);
+                if (sLZ > 0 && contienePista(salida, sLZ, bufferPista, sizePista)) {
+                    encontrado = true;
+                    sizeSalida = sLZ;
+                    bandera = true;
+                    nEncontrada = n;
+                    claveEncontrada = k;
+                    break;
+                }
+
+                int sRLE = descomprimirRLE(actual, size, salida, size * 50);
+                if (sRLE > 0 && contienePista(salida, sRLE, bufferPista, sizePista)) {
+                    encontrado = true;
+                    sizeSalida = sRLE;
+                    bandera = false;
+                    nEncontrada = n;
+                    claveEncontrada = k;
+                    break;
+                }
+            }
         }
     }
 
     cout << endl;
-    if (bandera) {
-        cout << "El metodo usado fue LZ78" << endl;
+
+    if (encontrado) {
+
+        if (bandera) {
+            cout << "El metodo usado fue LZ78" << endl;
+        } else {
+            cout << "El metodo usado fue RLE" << endl;
+        }
+        cout << "Rotacion aplicada: " << nEncontrada << " a la derecha \n";
+        cout << "La clave usada fue: 0x" << hex << claveEncontrada << dec << " (" << claveEncontrada << ")" << endl;
+
+        cout << "\n=== DESENCRIPTADO ===" << endl;
+
+        for (int i = 0; i < sizeSalida; i++) {
+            cout << salida[i];
+        }
+        cout << "\n===============================\n" << endl;
+
+        // Guardar resultado (enseñado en laboratorio)
+
+        ofstream resultado("resultado.txt", ios::binary);
+        resultado.write((char*)salida, sizeSalida);
+        resultado.close();
+        cout << "Se guardo el resultado en resultado.txt" << endl;
     } else {
-        cout << "El metodo usado fue RLE" << endl;
+        cout << "No se encontro la pista " << endl;
     }
-
-    cout << "La clave usada fue: 0x" << hex << (int)clave << endl;
-    cout << "Rotacion aplicada: 3 a la derecha" << endl;
-    // Guardar resultado (enseñado en laboratorio)
-
-    cout << "\n=== DESENCRIPTADO ===" << endl;
-    for (int i = 0; i < sizeSalida; i++) {
-        cout << salida[i];
-    }
-    cout << "\n===============================\n" << endl;
-
-
-    ofstream resultado("resultado.txt", ios::binary);
-    resultado.write((char*)salida, sizeSalida);
-    resultado.close();
-    cout << "Se guardo el resultado en resultado.txt" << endl;
 
     delete[] buffer;
     delete[] bufferPista;
     delete[] salida;
+    delete[] actual;
 
     return 0;
 }
-}
-*/
