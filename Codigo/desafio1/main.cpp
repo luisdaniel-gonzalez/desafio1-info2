@@ -23,18 +23,30 @@ void aplicarRotacion(unsigned char* buffer, int size, int n) {
 }
 
 int descomprimirRLE(unsigned char* entrada, int sizeEntrada, unsigned char* salida, int maxSize) {
-    int pos = 0;
-    for (int i = 0; i + 1 < sizeEntrada; i += 2) {
-        int rep = entrada[i] - '0';
-        unsigned char val = entrada[i + 1];
 
-        if (pos + rep > maxSize) rep = maxSize - pos;
-
-        for (int j = 0; j < rep; j++)
-            salida[pos++] = val;
+    if (sizeEntrada < 3) {  // 3 bytes minimo
+        return 0;
     }
+
+    int pos = 0;
+
+    for (int i = 0; i + 2 < sizeEntrada; i += 3) {
+        int rep = ((unsigned char)entrada[i] << 8) | (unsigned char)entrada[i + 1]; // 2 primeros bytes las repetic.
+        unsigned char val = entrada[i + 2];
+
+        if (pos + rep > maxSize) {
+            rep = maxSize - pos;
+        }
+
+        for (int j = 0; j < rep; ++j) {
+            salida[pos++] = val;
+        }
+    }
+
     return pos;
 }
+
+
 
 int descomprimirLZ78(unsigned char* buffer, int sizeBuffer, unsigned char* salida) {
 
