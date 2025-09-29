@@ -31,7 +31,7 @@ int descomprimirRLE(unsigned char* entrada, int sizeEntrada, unsigned char* sali
     int pos = 0;
 
     for (int i = 0; i + 2 < sizeEntrada; i += 3) {
-        int rep = ((unsigned char)entrada[i] << 8) | (unsigned char)entrada[i + 1]; // 2 primeros bytes las repetic.
+        int rep = ((unsigned char)entrada[i] << 8) | (unsigned char)entrada[i + 1]; // 2 primeros bytes las repeticiones.
         unsigned char val = entrada[i + 2];
 
         if (pos + rep > maxSize) {
@@ -45,8 +45,6 @@ int descomprimirRLE(unsigned char* entrada, int sizeEntrada, unsigned char* sali
 
     return pos;
 }
-
-
 
 int descomprimirLZ78(unsigned char* buffer, int sizeBuffer, unsigned char* salida) {
 

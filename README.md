@@ -30,3 +30,7 @@ https://github.com/luisdaniel-gonzalez/desafio1-info2-copiavieja
 ## Link del video:
 
 https://youtu.be/tt_CDUYrUS0
+
+---
+
+Versión final: 28 de septiembre de 2025 7:35 pm
